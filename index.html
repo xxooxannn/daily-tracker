@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col p-6">
+  <div class="h-[5vh] bg-yellow-400 text-black flex items-center justify-center text-sm font-semibold mb-5">
+    💛 If you like this tracker, <a href="https://buymeacoffee.com/Jharan" target="_blank" class="underline ml-1 hover:text-yellow-700">buy me a coffee ☕</a> and keep me going!
+  </div>
+  
+  <h1 class="text-3xl font-bold text-center mb-4">🗓️ Daily - Tracker</h1>
+
+  <!-- Main Layout -->
+  <div class="flex flex-col lg:flex-row gap-8 justify-center items-start w-full">
+    
+    <!-- Calendar -->
+    <div class="w-full lg:w-1/2">
+      <p id="streak" class="mb-4 text-green-400 font-medium text-lg"></p>
+      <div id="calendar" class="grid grid-cols-7 gap-3"></div>
+    </div>
+
+    <!-- To-Do List -->
+    <div class="w-full lg:w-1/2 bg-gray-800 p-4 rounded-xl max-h-[500px] flex flex-col">
+      <h2 class="text-xl font-semibold mb-4">📝 To-Do List</h2>
+      <div class="flex mb-4 gap-2">
+        <input id="todo-input" type="text" placeholder="Add task..." class="flex-1 px-3 py-2 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:outline-none">
+        <button id="add-todo" class="bg-blue-600 px-4 py-2 rounded-md hover:bg-blue-500 transition">Add</button>
+      </div>
+      <ul id="todo-list" class="space-y-2 overflow-y-auto pr-2 flex-1"></ul>
+    </div>
+  </div>
+
+  <!-- Footer Quote -->
+  <p id="quote" class="text-indigo-400 mt-10 text-center italic"></p>
+
+  <script>
+    const calendar = document.getElementById('calendar');
+    const streakBox = document.getElementById('streak');
+    const quoteBox = document.getElementById('quote');
+    const todoInput = document.getElementById('todo-input');
+    const addTodoBtn = document.getElementById('add-todo');
+    const todoList = document.getElementById('todo-list');
+
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const keyPrefix = `${year}-${month + 1}`;
+
+    const quotes = [
+      "No zero days, ever. 🧠",
+      "Keep showing up. That’s the game. 🎮",
+      "Success is built daily, not in a day. 🧱",
+      "You're building your future, one tick at a time. 🛠️",
+      "Even baby steps count. 🐾",
+      "You vs. yesterday. Win again. 👊",
+      "Grind now, flex later. 💪",
+    ];
+    quoteBox.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+
+ function generateCalendar(year, month) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  for (let i = 1; i <= daysInMonth; i++) {
+    const key = `${keyPrefix}-${i}`;
+    const ticked = localStorage.getItem(key) === 'true';
+
+    const day = document.createElement('div');
+    day.textContent = i;
+    day.className = "day flex items-center justify-center h-12 rounded-xl border border-gray-700 cursor-pointer hover:bg-gray-700 transition-all";
+
+    const isPast = new Date(year, month, i) < new Date(year, month, today.getDate());
+
+    if (ticked) {
+      day.classList.add('bg-green-500', 'text-white', 'border-green-500');
+    } else if (isPast) {
+      day.classList.add('line-through', 'text-gray-500');
+    }
+
+    day.addEventListener('click', () => {
+      const isTicked = day.classList.contains('bg-green-500');
+      if (isTicked) {
+        day.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+        localStorage.setItem(key, false);
+      } else {
+        day.classList.add('bg-green-500', 'text-white', 'border-green-500');
+        localStorage.setItem(key, true);
+      }
+      updateStreak();
+    });
+
+    calendar.appendChild(day);
+  }
+
+  updateStreak();
+}
+
+
+    function updateStreak() {
+      let totalTicks = 0;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 1; i <= daysInMonth; i++) {
+        const key = `${keyPrefix}-${i}`;
+        const ticked = localStorage.getItem(key) === 'true';
+        if (ticked) totalTicks++;
+      }
+
+      streakBox.textContent = `✅ Total Completed Days: ${totalTicks} / ${daysInMonth}`;
+    }
+
+    function loadTodos() {
+      const todos = JSON.parse(localStorage.getItem('todos') || '[]');
+      todoList.innerHTML = '';
+
+      todos.forEach((todo, index) => {
+        const li = document.createElement('li');
+        li.className = "bg-gray-700 px-3 py-2 rounded-md flex justify-between items-center";
+
+        const btns = document.createElement('div');
+        btns.className = "flex gap-2";
+
+        const doneBtn = document.createElement('button');
+        doneBtn.textContent = '✅';
+        doneBtn.className = "text-green-400 hover:text-green-300";
+        doneBtn.addEventListener('click', () => {
+          todos[index].done = !todos[index].done;
+          localStorage.setItem('todos', JSON.stringify(todos));
+          loadTodos();
+        });
+
+        const content = document.createElement('span');
+        content.textContent = todo.text;
+        if (todo.done) content.classList.add("line-through", "text-gray-400");
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '❌';
+        delBtn.className = "text-red-400 hover:text-red-300";
+        delBtn.addEventListener('click', () => {
+          todos.splice(index, 1);
+          localStorage.setItem('todos', JSON.stringify(todos));
+          loadTodos();
+        });
+
+        btns.appendChild(doneBtn);
+        btns.appendChild(delBtn);
+
+        li.appendChild(btns);
+        li.appendChild(content);
+        todoList.appendChild(li);
+      });
+    }
+
+    function addTodo() {
+      const task = todoInput.value.trim();
+      if (task !== '') {
+        const todos = JSON.parse(localStorage.getItem('todos') || '[]');
+        todos.push({ text: task, done: false });
+        localStorage.setItem('todos', JSON.stringify(todos));
+        todoInput.value = '';
+        loadTodos();
+      }
+    }
+
+    function deleteAllTodos() {
+      if (confirm("Are you sure you want to delete all to-dos?")) {
+        localStorage.setItem('todos', JSON.stringify([]));
+        loadTodos();
+      }
+    }
+
+    addTodoBtn.addEventListener('click', addTodo);
+    todoInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        addTodo();
+      }
+    });
+
+    // Add Delete All button
+    const deleteAllBtn = document.createElement('button');
+    deleteAllBtn.textContent = 'Delete All';
+    deleteAllBtn.className = "bg-red-600 px-4 py-2 rounded-md hover:bg-red-500 transition mt-4";
+    deleteAllBtn.addEventListener('click', deleteAllTodos);
+    document.querySelector('.w-full.lg\\:w-1\\/2.bg-gray-800.p-4.rounded-xl.max-h-\\[500px\\].flex.flex-col').appendChild(deleteAllBtn);
+
+    generateCalendar(year, month);
+    loadTodos();
+  </script>
+</body>
+</html>
