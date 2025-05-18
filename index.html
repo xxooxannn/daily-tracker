@@ -1,192 +1,688 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Daily Tracker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X-Dash - Modern Productivity Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#faf5ff',
+              100: '#f3e8ff',
+              500: '#a855f7',
+              600: '#9333ea',
+              700: '#7e22ce',
+            },
+            secondary: {
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+            },
+            surface: {
+              dark: '#000000',
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-in-out',
+            'float': 'float 3s ease-in-out infinite',
+            'wave': 'wave 1.8s ease-in-out infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              from: { opacity: 0, transform: 'translateY(10px)' },
+              to: { opacity: 1, transform: 'translateY(0)' }
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-8px)' }
+            },
+            wave: {
+              '0%, 100%': { transform: 'rotate(0deg)' },
+              '25%': { transform: 'rotate(10deg)' },
+              '75%': { transform: 'rotate(-10deg)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #000000;
+    }
+    .note:hover .delete-note {
+      opacity: 1;
+    }
+    /* Hide scrollbar but keep functionality */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Glass effect */
+    .glass {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #111827;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #a855f7;
+      border-radius: 4px;
+    }
+    /* Custom range slider */
+    input[type="range"] {
+      -webkit-appearance: none;
+      height: 6px;
+      background: #1f2937;
+      border-radius: 3px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: #f97316;
+      cursor: pointer;
+      box-shadow: 0 0 2px rgba(0,0,0,0.5);
+    }
+    /* Custom glow effect */
+    .glow-effect {
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col p-6">
-  <div class="h-[5vh] bg-yellow-400 text-black flex items-center justify-center text-sm font-semibold mb-5">
-    💛 If you like this tracker, <a href="https://buymeacoffee.com/Jharan" target="_blank" class="underline ml-1 hover:text-yellow-700">buy me a coffee ☕</a> and keep me going!
-  </div>
-  
-  <h1 class="text-3xl font-bold text-center mb-4">🗓️ Daily - Tracker</h1>
-
-  <!-- Main Layout -->
-  <div class="flex flex-col lg:flex-row gap-8 justify-center items-start w-full">
-    
-    <!-- Calendar -->
-    <div class="w-full lg:w-1/2">
-      <p id="streak" class="mb-4 text-green-400 font-medium text-lg"></p>
-      <div id="calendar" class="grid grid-cols-7 gap-3"></div>
-    </div>
-
-    <!-- To-Do List -->
-    <div class="w-full lg:w-1/2 bg-gray-800 p-4 rounded-xl max-h-[500px] flex flex-col">
-      <h2 class="text-xl font-semibold mb-4">📝 To-Do List</h2>
-      <div class="flex mb-4 gap-2">
-        <input id="todo-input" type="text" placeholder="Add task..." class="flex-1 px-3 py-2 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:outline-none">
-        <button id="add-todo" class="bg-blue-600 px-4 py-2 rounded-md hover:bg-blue-500 transition">Add</button>
+<body class="bg-black text-gray-100 min-h-screen">
+  <div class="container mx-auto px-4 py-8 max-w-6xl">
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-12">
+      <div class="flex items-center">
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-500 to-orange-500 bg-clip-text text-transparent">xDash</h1>
+        <span class="ml-2 px-2 py-1 text-xs rounded-full bg-purple-900/50 text-purple-300">v2.1</span>
       </div>
-      <ul id="todo-list" class="space-y-2 overflow-y-auto pr-2 flex-1"></ul>
-    </div>
-  </div>
+      <div class="flex items-center space-x-4">
+        <span class="px-3 py-1 bg-black/50 rounded-full text-sm border border-purple-900/50">
+          <i class="fas fa-moon mr-2 text-purple-400"></i>Dark Mode
+        </span>
+      </div>
+    </header>
 
-  <!-- Footer Quote -->
-  <p id="quote" class="text-indigo-400 mt-10 text-center italic"></p>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Todo List -->
+      <div class="bg-zinc-900 rounded-2xl p-6 transition-all duration-300 animate-fade-in glass border border-zinc-800 glow-effect">
+        <div class="flex items-center mb-4">
+          <div class="w-3 h-8 bg-gradient-to-br from-purple-500 to-orange-500 rounded-full mr-3 animate-float"></div>
+          <h2 class="text-xl font-semibold">Task Manager</h2>
+          <span class="ml-auto text-xs px-2 py-1 rounded-full bg-purple-900/30 text-purple-300">
+            Todo (<span id="todo-count">0</span>)
+          </span>
+        </div>
+        <form id="todo-form" class="flex mb-4">
+          <div class="relative flex-1">
+            <input 
+              type="text" 
+              id="todo-input" 
+              placeholder="Add a task..." 
+              class="w-full px-4 py-3 border-0 bg-zinc-800 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none placeholder-gray-600 transition-all duration-200 pl-10 shadow-inner"
+              required
+            >
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-plus text-gray-600"></i>
+            </div>
+          </div>
+          <button 
+            type="submit" 
+            class="ml-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 shadow-md"
+          >
+            Add
+          </button>
+        </form>
+        <ul id="todo-list" class="space-y-2 max-h-80 overflow-y-auto pr-2 no-scrollbar">
+          <!-- Todos will be added here -->
+        </ul>
+      </div>
+
+      <!-- Pomodoro Timer -->
+      <div class="bg-zinc-900 rounded-2xl p-6 transition-all duration-300 animate-fade-in glass border border-zinc-800 glow-effect">
+        <div class="flex items-center mb-4">
+          <div class="w-3 h-8 bg-gradient-to-br from-orange-500 to-purple-500 rounded-full mr-3 animate-wave"></div>
+          <h2 class="text-xl font-semibold">Pomodoro Timer</h2>
+          <div class="ml-auto flex space-x-1">
+            <button id="mode-work" class="px-2 py-1 text-xs rounded bg-purple-900/30 text-purple-300 border border-purple-800/50">Work</button>
+            <button id="mode-break" class="px-2 py-1 text-xs rounded bg-zinc-800 text-gray-300 border border-zinc-700">Break</button>
+          </div>
+        </div>
+        
+        <!-- Timer Controls -->
+        <div class="flex flex-col items-center">
+          <div id="timer-display" class="text-6xl font-bold mb-6 font-mono bg-gradient-to-r from-orange-500 to-purple-500 bg-clip-text text-transparent my-8">25:00</div>
+          
+          <!-- Time Adjustment Sliders -->
+          <div class="w-full mb-6 space-y-4">
+            <div class="flex items-center">
+              <span class="w-20 text-sm text-gray-400">Work:</span>
+              <input type="range" id="work-slider" min="1" max="120" value="25" class="flex-1 mx-2">
+              <span id="work-value" class="w-10 text-right">25</span>
+              <span class="text-xs text-gray-400 ml-1">min</span>
+            </div>
+            <div class="flex items-center">
+              <span class="w-20 text-sm text-gray-400">Break:</span>
+              <input type="range" id="break-slider" min="1" max="30" value="5" class="flex-1 mx-2">
+              <span id="break-value" class="w-10 text-right">5</span>
+              <span class="text-xs text-gray-400 ml-1">min</span>
+            </div>
+          </div>
+          
+          <div class="flex space-x-4 mb-6">
+            <button 
+              id="timer-start" 
+              class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 shadow-md flex items-center"
+            >
+              <i class="fas fa-play mr-2"></i>
+              Start
+            </button>
+            <button 
+              id="timer-pause" 
+              class="px-5 py-2.5 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all duration-200 shadow-md flex items-center"
+              disabled
+            >
+              <i class="fas fa-pause mr-2"></i>
+              Pause
+            </button>
+            <button 
+              id="timer-reset" 
+              class="px-5 py-2.5 bg-gradient-to-r from-zinc-700 to-zinc-800 text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 transition-all duration-200 shadow-md flex items-center"
+            >
+              <i class="fas fa-redo mr-2"></i>
+              Reset
+            </button>
+          </div>
+          <div id="timer-status" class="text-lg font-medium text-gray-300 text-center">
+            <span class="px-3 py-1 rounded-full bg-zinc-800 text-sm">Ready to focus</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Journal -->
+      <div class="bg-zinc-900 rounded-2xl p-6 transition-all duration-300 animate-fade-in glass border border-zinc-800 glow-effect">
+        <div class="flex items-center mb-4">
+          <div class="w-3 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full mr-3"></div>
+          <h2 class="text-xl font-semibold">Daily Journal</h2>
+          <span id="journal-date" class="ml-auto text-xs px-2 py-1 rounded-full bg-purple-900/30 text-purple-300">
+            Today
+          </span>
+        </div>
+        <div class="relative">
+          <textarea 
+            id="journal-entry" 
+            rows="8" 
+            placeholder="What's on your mind today?" 
+            class="w-full px-4 py-3 bg-zinc-800 rounded-lg mb-4 focus:ring-2 focus:ring-purple-500 focus:outline-none placeholder-gray-600 transition-all duration-200 shadow-inner"
+          ></textarea>
+          <div class="absolute bottom-6 right-4 flex space-x-2">
+            <button 
+              id="save-journal" 
+              class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 shadow-md"
+            >
+              <i class="fas fa-save mr-2"></i>Save
+            </button>
+          </div>
+        </div>
+        <div id="journal-status" class="text-sm text-gray-500"></div>
+      </div>
+
+      <!-- Sticky Notes -->
+      <div class="bg-zinc-900 rounded-2xl p-6 transition-all duration-300 animate-fade-in glass border border-zinc-800 glow-effect">
+        <div class="flex items-center mb-4">
+          <div class="w-3 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full mr-3"></div>
+          <h2 class="text-xl font-semibold">Quick Notes</h2>
+          <span class="ml-auto text-xs px-2 py-1 rounded-full bg-orange-900/30 text-orange-300">
+            Notes (<span id="notes-count">0</span>)
+          </span>
+        </div>
+        <form id="note-form" class="mb-6">
+          <div class="flex items-center relative">
+            <input 
+              type="text" 
+              id="note-input" 
+              placeholder="Jot something down..." 
+              class="flex-1 px-4 py-3 pl-10 border-0 bg-zinc-800 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none placeholder-gray-600 transition-all duration-200 shadow-inner"
+            >
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-pen text-gray-600"></i>
+            </div>
+            <button 
+              type="submit" 
+              class="ml-2 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all duration-200 shadow-md"
+            >
+              <i class="fas fa-plus mr-1"></i>Add
+            </button>
+          </div>
+        </form>
+        <div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <!-- Notes will be added here -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="mt-12 text-center text-sm text-gray-500">
+      <p>Made with <span class="text-orange-500">♥</span> for productive minds | xDash v2.1</p>
+    </footer>
+  </div>
 
   <script>
-    const calendar = document.getElementById('calendar');
-    const streakBox = document.getElementById('streak');
-    const quoteBox = document.getElementById('quote');
-    const todoInput = document.getElementById('todo-input');
-    const addTodoBtn = document.getElementById('add-todo');
-    const todoList = document.getElementById('todo-list');
+    // Theme Setup (Dark Mode Only)
+    document.documentElement.classList.add('dark');
 
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const keyPrefix = `${year}-${month + 1}`;
-
-    const quotes = [
-      "No zero days, ever. 🧠",
-      "Keep showing up. That’s the game. 🎮",
-      "Success is built daily, not in a day. 🧱",
-      "You're building your future, one tick at a time. 🛠️",
-      "Even baby steps count. 🐾",
-      "You vs. yesterday. Win again. 👊",
-      "Grind now, flex later. 💪",
-    ];
-    quoteBox.textContent = quotes[Math.floor(Math.random() * quotes.length)];
-
- function generateCalendar(year, month) {
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  for (let i = 1; i <= daysInMonth; i++) {
-    const key = `${keyPrefix}-${i}`;
-    const ticked = localStorage.getItem(key) === 'true';
-
-    const day = document.createElement('div');
-    day.textContent = i;
-    day.className = "day flex items-center justify-center h-12 rounded-xl border border-gray-700 cursor-pointer hover:bg-gray-700 transition-all";
-
-    const isPast = new Date(year, month, i) < new Date(year, month, today.getDate());
-
-    if (ticked) {
-      day.classList.add('bg-green-500', 'text-white', 'border-green-500');
-    } else if (isPast) {
-      day.classList.add('line-through', 'text-gray-500');
-    }
-
-    day.addEventListener('click', () => {
-      const isTicked = day.classList.contains('bg-green-500');
-      if (isTicked) {
-        day.classList.remove('bg-green-500', 'text-white', 'border-green-500');
-        localStorage.setItem(key, false);
-      } else {
-        day.classList.add('bg-green-500', 'text-white', 'border-green-500');
-        localStorage.setItem(key, true);
-      }
-      updateStreak();
+    // Initialize all components
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTodos();
+      loadJournal();
+      loadNotes();
     });
 
-    calendar.appendChild(day);
-  }
-
-  updateStreak();
-}
-
-
-    function updateStreak() {
-      let totalTicks = 0;
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-      for (let i = 1; i <= daysInMonth; i++) {
-        const key = `${keyPrefix}-${i}`;
-        const ticked = localStorage.getItem(key) === 'true';
-        if (ticked) totalTicks++;
-      }
-
-      streakBox.textContent = `✅ Total Completed Days: ${totalTicks} / ${daysInMonth}`;
-    }
+    // Todo List
+    const todoForm = document.getElementById('todo-form');
+    const todoInput = document.getElementById('todo-input');
+    const todoList = document.getElementById('todo-list');
+    const todoCount = document.getElementById('todo-count');
 
     function loadTodos() {
-      const todos = JSON.parse(localStorage.getItem('todos') || '[]');
+      const todos = JSON.parse(localStorage.getItem('todos')) || [];
       todoList.innerHTML = '';
+      todos.forEach(todo => addTodoToDOM(todo));
+      updateTodoCount();
+    }
 
-      todos.forEach((todo, index) => {
-        const li = document.createElement('li');
-        li.className = "bg-gray-700 px-3 py-2 rounded-md flex justify-between items-center";
+    function addTodoToDOM(todo) {
+      const li = document.createElement('li');
+      li.className = 'group flex items-center justify-between px-4 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors duration-200 animate-fade-in';
+      
+      const div = document.createElement('div');
+      div.className = 'flex items-center flex-1 min-w-0';
+      
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'rounded-full h-5 w-5 text-purple-600 focus:ring-purple-500 focus:ring-2 cursor-pointer mr-3 flex-shrink-0';
+      checkbox.checked = todo.completed;
+      checkbox.addEventListener('change', () => toggleTodo(todo.id));
+      
+      const span = document.createElement('span');
+      span.className = todo.completed ? 'line-through text-gray-500 flex-1 truncate' : 'text-gray-300 flex-1 truncate';
+      span.textContent = todo.text;
+      span.title = todo.text;
+      
+      const button = document.createElement('button');
+      button.className = 'opacity-0 group-hover:opacity-100 text-gray-500 hover:text-orange-400 ml-2 transition-opacity duration-200 flex-shrink-0';
+      button.innerHTML = '<i class="fas fa-times"></i>';
+      button.addEventListener('click', () => deleteTodo(todo.id));
+      
+      div.appendChild(checkbox);
+      div.appendChild(span);
+      li.appendChild(div);
+      li.appendChild(button);
+      todoList.appendChild(li);
+    }
 
-        const btns = document.createElement('div');
-        btns.className = "flex gap-2";
+    function updateTodoCount() {
+      const todos = JSON.parse(localStorage.getItem('todos')) || [];
+      const activeTodos = todos.filter(todo => !todo.completed).length;
+      todoCount.textContent = activeTodos;
+    }
 
-        const doneBtn = document.createElement('button');
-        doneBtn.textContent = '✅';
-        doneBtn.className = "text-green-400 hover:text-green-300";
-        doneBtn.addEventListener('click', () => {
-          todos[index].done = !todos[index].done;
-          localStorage.setItem('todos', JSON.stringify(todos));
-          loadTodos();
-        });
+    function addTodo(e) {
+      e.preventDefault();
+      
+      const todoText = todoInput.value.trim();
+      if (todoText === '') return;
+      
+      const newTodo = {
+        id: Date.now().toString(),
+        text: todoText,
+        completed: false,
+        createdAt: new Date().toISOString()
+      };
+      
+      const todos = JSON.parse(localStorage.getItem('todos')) || [];
+      todos.unshift(newTodo);
+      localStorage.setItem('todos', JSON.stringify(todos));
+      
+      addTodoToDOM(newTodo);
+      todoInput.value = '';
+      updateTodoCount();
+      todoInput.focus();
+    }
 
-        const content = document.createElement('span');
-        content.textContent = todo.text;
-        if (todo.done) content.classList.add("line-through", "text-gray-400");
+    function toggleTodo(id) {
+      const todos = JSON.parse(localStorage.getItem('todos')) || [];
+      const updatedTodos = todos.map(todo => 
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      );
+      localStorage.setItem('todos', JSON.stringify(updatedTodos));
+      loadTodos();
+    }
 
-        const delBtn = document.createElement('button');
-        delBtn.textContent = '❌';
-        delBtn.className = "text-red-400 hover:text-red-300";
-        delBtn.addEventListener('click', () => {
-          todos.splice(index, 1);
-          localStorage.setItem('todos', JSON.stringify(todos));
-          loadTodos();
-        });
+    function deleteTodo(id) {
+      const todos = JSON.parse(localStorage.getItem('todos')) || [];
+      const filteredTodos = todos.filter(todo => todo.id !== id);
+      localStorage.setItem('todos', JSON.stringify(filteredTodos));
+      loadTodos();
+    }
 
-        btns.appendChild(doneBtn);
-        btns.appendChild(delBtn);
+    todoForm.addEventListener('submit', addTodo);
 
-        li.appendChild(btns);
-        li.appendChild(content);
-        todoList.appendChild(li);
+    // Pomodoro Timer
+    const timerDisplay = document.getElementById('timer-display');
+    const startBtn = document.getElementById('timer-start');
+    const pauseBtn = document.getElementById('timer-pause');
+    const resetBtn = document.getElementById('timer-reset');
+    const timerStatus = document.getElementById('timer-status');
+    const modeWorkBtn = document.getElementById('mode-work');
+    const modeBreakBtn = document.getElementById('mode-break');
+    const workSlider = document.getElementById('work-slider');
+    const breakSlider = document.getElementById('break-slider');
+    const workValue = document.getElementById('work-value');
+    const breakValue = document.getElementById('break-value');
+
+    let workDuration = 25 * 60; // 25 minutes in seconds
+    let breakDuration = 5 * 60;  // 5 minutes in seconds
+    let timeLeft = workDuration;
+    let timerInterval;
+    let isWorkSession = true;
+    let isRunning = false;
+
+    // Update slider values
+    workSlider.addEventListener('input', (e) => {
+      workDuration = e.target.value * 60;
+      workValue.textContent = e.target.value;
+      if (!isRunning && isWorkSession) {
+        timeLeft = workDuration;
+        updateDisplay();
+      }
+    });
+
+    breakSlider.addEventListener('input', (e) => {
+      breakDuration = e.target.value * 60;
+      breakValue.textContent = e.target.value;
+      if (!isRunning && !isWorkSession) {
+        timeLeft = breakDuration;
+        updateDisplay();
+      }
+    });
+
+    function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateDisplay() {
+      timerDisplay.textContent = formatTime(timeLeft);
+    }
+
+    function startTimer() {
+      if (isRunning) return;
+      
+      isRunning = true;
+      startBtn.disabled = true;
+      pauseBtn.disabled = false;
+      
+      timerStatus.innerHTML = `<span class="px-3 py-1 rounded-full ${isWorkSession ? 'bg-purple-900/30 text-purple-300' : 'bg-orange-900/30 text-orange-300'} text-sm">${isWorkSession ? 'Focus time!' : 'Break time!'}</span>`;
+      
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateDisplay();
+        
+        if (timeLeft < 0) {
+          clearInterval(timerInterval);
+          isWorkSession = !isWorkSession;
+          timeLeft = isWorkSession ? workDuration : breakDuration;
+          updateDisplay();
+          updateModeButtons();
+          
+          // Notification sound
+          const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
+          audio.play().catch(e => console.log('Audio play failed:', e));
+          
+          // Show notification if permitted
+          if (Notification.permission === 'granted') {
+            const notification = new Notification(isWorkSession ? 'Break over!' : 'Great work!', {
+              body: isWorkSession ? 'Time to get back to work!' : 'Take a well deserved break.',
+              icon: 'https://img.icons8.com/fluency/48/000000/timer.png'
+            });
+            setTimeout(() => notification.close(), 5000);
+          }
+          
+          startTimer(); // Auto start next session
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timerInterval);
+      isRunning = false;
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+      timerStatus.innerHTML = '<span class="px-3 py-1 rounded-full bg-zinc-800 text-gray-300 text-sm">Paused</span>';
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      isRunning = false;
+      isWorkSession = true;
+      timeLeft = workDuration;
+      updateDisplay();
+      updateModeButtons();
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+      timerStatus.innerHTML = '<span class="px-3 py-1 rounded-full bg-purple-900/30 text-purple-300 text-sm">Ready to focus</span>';
+    }
+
+    function updateModeButtons() {
+      if (isWorkSession) {
+        modeWorkBtn.classList.replace('bg-zinc-800', 'bg-purple-900/30');
+        modeWorkBtn.classList.replace('text-gray-300', 'text-purple-300');
+        modeWorkBtn.classList.replace('border-zinc-700', 'border-purple-800/50');
+        
+        modeBreakBtn.classList.replace('bg-purple-900/30', 'bg-zinc-800');
+        modeBreakBtn.classList.replace('text-purple-300', 'text-gray-300');
+        modeBreakBtn.classList.replace('border-purple-800/50', 'border-zinc-700');
+      } else {
+        modeBreakBtn.classList.replace('bg-zinc-800', 'bg-orange-900/30');
+        modeBreakBtn.classList.replace('text-gray-300', 'text-orange-300');
+        modeBreakBtn.classList.replace('border-zinc-700', 'border-orange-800/50');
+        
+        modeWorkBtn.classList.replace('bg-purple-900/30', 'bg-zinc-800');
+        modeWorkBtn.classList.replace('text-purple-300', 'text-gray-300');
+        modeWorkBtn.classList.replace('border-purple-800/50', 'border-zinc-700');
+      }
+    }
+
+    function setMode(mode) {
+      if (isRunning) pauseTimer();
+      
+      if (mode === 'work') {
+        isWorkSession = true;
+        timeLeft = workDuration;
+      } else {
+        isWorkSession = false;
+        timeLeft = breakDuration;
+      }
+      
+      updateDisplay();
+      updateModeButtons();
+    }
+
+    // Initialize timer
+    updateDisplay();
+    updateModeButtons();
+    startBtn.addEventListener('click', startTimer);
+    pauseBtn.addEventListener('click', pauseTimer);
+    resetBtn.addEventListener('click', resetTimer);
+    modeWorkBtn.addEventListener('click', () => setMode('work'));
+    modeBreakBtn.addEventListener('click', () => setMode('break'));
+
+    // Request notification permission
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+
+    // Daily Journal
+    const journalEntry = document.getElementById('journal-entry');
+    const saveJournalBtn = document.getElementById('save-journal');
+    const journalStatus = document.getElementById('journal-status');
+    const journalDate = document.getElementById('journal-date');
+
+    function formatDate(date) {
+      return new Date(date).toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        month: 'short', 
+        day: 'numeric' 
       });
     }
 
-    function addTodo() {
-      const task = todoInput.value.trim();
-      if (task !== '') {
-        const todos = JSON.parse(localStorage.getItem('todos') || '[]');
-        todos.push({ text: task, done: false });
-        localStorage.setItem('todos', JSON.stringify(todos));
-        todoInput.value = '';
-        loadTodos();
+    function loadJournal() {
+      const today = new Date().toISOString().split('T')[0];
+      const entries = JSON.parse(localStorage.getItem('journalEntries')) || {};
+      
+      if (entries[today]) {
+        journalEntry.value = entries[today];
+        journalStatus.textContent = 'Last saved: Today';
+      } else {
+        journalStatus.textContent = 'New entry for today';
       }
+      
+      journalDate.textContent = formatDate(today);
     }
 
-    function deleteAllTodos() {
-      if (confirm("Are you sure you want to delete all to-dos?")) {
-        localStorage.setItem('todos', JSON.stringify([]));
-        loadTodos();
-      }
+    function saveJournal() {
+      const today = new Date().toISOString().split('T')[0];
+      const entries = JSON.parse(localStorage.getItem('journalEntries')) || {};
+      
+      entries[today] = journalEntry.value;
+      localStorage.setItem('journalEntries', JSON.stringify(entries));
+      
+      journalStatus.textContent = 'Saved!';
+      saveJournalBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Saved';
+      saveJournalBtn.classList.add('from-purple-500', 'to-purple-600');
+      
+      setTimeout(() => {
+        saveJournalBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Save';
+        saveJournalBtn.classList.remove('from-purple-500', 'to-purple-600');
+        if (journalEntry.value) {
+          journalStatus.textContent = 'Last saved: Just now';
+        } else {
+          journalStatus.textContent = 'Entry cleared';
+        }
+      }, 2000);
     }
 
-    addTodoBtn.addEventListener('click', addTodo);
-    todoInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        addTodo();
-      }
-    });
+    saveJournalBtn.addEventListener('click', saveJournal);
 
-    // Add Delete All button
-    const deleteAllBtn = document.createElement('button');
-    deleteAllBtn.textContent = 'Delete All';
-    deleteAllBtn.className = "bg-red-600 px-4 py-2 rounded-md hover:bg-red-500 transition mt-4";
-    deleteAllBtn.addEventListener('click', deleteAllTodos);
-    document.querySelector('.w-full.lg\\:w-1\\/2.bg-gray-800.p-4.rounded-xl.max-h-\\[500px\\].flex.flex-col').appendChild(deleteAllBtn);
+    // Sticky Notes
+    const noteForm = document.getElementById('note-form');
+    const noteInput = document.getElementById('note-input');
+    const notesContainer = document.getElementById('notes-container');
+    const notesCount = document.getElementById('notes-count');
 
-    generateCalendar(year, month);
-    loadTodos();
+    const noteColors = [
+      'bg-gradient-to-br from-purple-900/40 to-purple-900/20',
+      'bg-gradient-to-br from-orange-900/40 to-orange-900/20',
+      'bg-gradient-to-br from-zinc-900/40 to-zinc-900/20',
+      'bg-gradient-to-br from-purple-900/30 to-orange-900/30',
+    ];
+
+    const noteShadows = [
+      'shadow-purple-900/20',
+      'shadow-orange-900/20',
+      'shadow-zinc-900/20',
+      'shadow-purple-900/20',
+    ];
+
+    function loadNotes() {
+      const notes = JSON.parse(localStorage.getItem('stickyNotes')) || [];
+      notesContainer.innerHTML = '';
+      notes.forEach(note => addNoteToDOM(note));
+      updateNotesCount();
+    }
+
+    function updateNotesCount() {
+      const notes = JSON.parse(localStorage.getItem('stickyNotes')) || [];
+      notesCount.textContent = notes.length;
+    }
+
+    function addNoteToDOM(note) {
+      const noteEl = document.createElement('div');
+      noteEl.className = `note relative p-4 rounded-xl ${note.color} shadow-md hover:shadow-lg hover:${note.shadow} hover:-translate-y-0.5 transition-all duration-300 animate-fade-in h-full`;
+      
+      const text = document.createElement('p');
+      text.className = 'whitespace-pre-wrap break-words';
+      text.textContent = note.text;
+      
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'delete-note absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-500 hover:text-orange-400 p-1';
+      deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteNote(note.id);
+      });
+      
+      noteEl.appendChild(text);
+      noteEl.appendChild(deleteBtn);
+      notesContainer.appendChild(noteEl);
+    }
+
+    function addNote(e) {
+      e.preventDefault();
+      
+      const noteText = noteInput.value.trim();
+      if (noteText === '') return;
+      
+      const colorIndex = Math.floor(Math.random() * noteColors.length);
+      
+      const newNote = {
+        id: Date.now().toString(),
+        text: noteText,
+        color: noteColors[colorIndex],
+        shadow: noteShadows[colorIndex],
+        createdAt: new Date().toISOString()
+      };
+      
+      const notes = JSON.parse(localStorage.getItem('stickyNotes')) || [];
+      notes.unshift(newNote);
+      localStorage.setItem('stickyNotes', JSON.stringify(notes));
+      
+      addNoteToDOM(newNote);
+      noteInput.value = '';
+      updateNotesCount();
+      noteInput.focus();
+    }
+
+    function deleteNote(id) {
+      const notes = JSON.parse(localStorage.getItem('stickyNotes')) || [];
+      const filteredNotes = notes.filter(note => note.id !== id);
+      localStorage.setItem('stickyNotes', JSON.stringify(filteredNotes));
+      loadNotes();
+    }
+
+    noteForm.addEventListener('submit', addNote);
   </script>
 </body>
 </html>
